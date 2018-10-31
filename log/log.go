@@ -12,8 +12,8 @@ import (
 	"os"
 
 	"github.com/evalphobia/logrus_sentry"
+	"github.com/fabric8-services/build-tool-detector/config"
 	"github.com/sirupsen/logrus"
-	"github.com/tinakurian/build-tool-detector/config"
 )
 
 const (

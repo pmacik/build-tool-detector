@@ -14,13 +14,13 @@ import (
 	"fmt"
 
 	"github.com/goadesign/goa"
-	"github.com/tinakurian/build-tool-detector/app"
-	"github.com/tinakurian/build-tool-detector/config"
-	errs "github.com/tinakurian/build-tool-detector/controllers/error"
-	"github.com/tinakurian/build-tool-detector/domain/repository"
-	"github.com/tinakurian/build-tool-detector/domain/repository/github"
-	"github.com/tinakurian/build-tool-detector/domain/types"
-	"github.com/tinakurian/build-tool-detector/log"
+	"github.com/fabric8-services/build-tool-detector/app"
+	"github.com/fabric8-services/build-tool-detector/config"
+	errs "github.com/fabric8-services/build-tool-detector/controllers/error"
+	"github.com/fabric8-services/build-tool-detector/domain/repository"
+	"github.com/fabric8-services/build-tool-detector/domain/repository/github"
+	"github.com/fabric8-services/build-tool-detector/domain/types"
+	"github.com/fabric8-services/build-tool-detector/log"
 )
 
 var (

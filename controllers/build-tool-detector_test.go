@@ -14,9 +14,9 @@ import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/spf13/viper"
-	"github.com/tinakurian/build-tool-detector/app/test"
-	"github.com/tinakurian/build-tool-detector/config"
-	controllers "github.com/tinakurian/build-tool-detector/controllers"
+	"github.com/fabric8-services/build-tool-detector/app/test"
+	"github.com/fabric8-services/build-tool-detector/config"
+	controllers "github.com/fabric8-services/build-tool-detector/controllers"
 	"gopkg.in/h2non/gock.v1"
 )
 

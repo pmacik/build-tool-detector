@@ -24,7 +24,7 @@ in the following JSON response:
 package types
 
 import (
-	"github.com/tinakurian/build-tool-detector/app"
+	"github.com/fabric8-services/build-tool-detector/app"
 )
 
 const (

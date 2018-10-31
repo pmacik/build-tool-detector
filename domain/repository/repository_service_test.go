@@ -10,9 +10,9 @@ import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/spf13/viper"
-	"github.com/tinakurian/build-tool-detector/config"
-	"github.com/tinakurian/build-tool-detector/domain/repository"
-	"github.com/tinakurian/build-tool-detector/domain/repository/github"
+	"github.com/fabric8-services/build-tool-detector/config"
+	"github.com/fabric8-services/build-tool-detector/domain/repository"
+	"github.com/fabric8-services/build-tool-detector/domain/repository/github"
 )
 
 var _ = Describe("GitServiceType", func() {

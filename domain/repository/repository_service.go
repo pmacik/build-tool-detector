@@ -16,9 +16,9 @@ import (
 	"net/url"
 	"strings"
 
-	"github.com/tinakurian/build-tool-detector/config"
-	"github.com/tinakurian/build-tool-detector/domain/repository/github"
-	"github.com/tinakurian/build-tool-detector/domain/types"
+	"github.com/fabric8-services/build-tool-detector/config"
+	"github.com/fabric8-services/build-tool-detector/domain/repository/github"
+	"github.com/fabric8-services/build-tool-detector/domain/types"
 )
 
 var (

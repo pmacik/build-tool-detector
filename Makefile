@@ -1,61 +1,186 @@
-#! /usr/bin/make
+PROJECT_NAME=build-tool-detector
+PACKAGE_NAME:=github.com/fabric8-services/$(PROJECT_NAME)
+CUR_DIR=$(shell pwd)
+TMP_PATH=$(CUR_DIR)/tmp
+INSTALL_PREFIX=$(CUR_DIR)/bin
+VENDOR_DIR=vendor
+SOURCE_DIR ?= .
+SOURCES := $(shell find $(SOURCE_DIR) -path $(SOURCE_DIR)/vendor -prune -o -name '*.go' -print)
+DESIGN_DIR=design
+DESIGNS := $(shell find $(SOURCE_DIR)/$(DESIGN_DIR) -path $(SOURCE_DIR)/vendor -prune -o -name '*.go' -print)
 
-CURRENT_DIR := $(shell dirname $(realpath $(lastword $(MAKEFILE_LIST))))
-PROJECT_REPO := 'github.com/tinakurian'
-PROJECT_NAME := 'build-tool-detector'
-
-.DEFAULT_GOAL := all
-
-all: clean install generate build test check
-
-# Build configuration
-BUILD_TIME=$(shell date -u '+%Y-%m-%dT%H:%M:%SZ')
-BINARY_DIR:=${PWD}/bin
-BINARY:=build-tool-detector
-GITUNTRACKEDCHANGES:=$(shell git status --porcelain --untracked-files=no)
-ifneq ($(GITUNTRACKEDCHANGES),)
-  COMMIT := $(COMMIT)-dirty
+ifeq ($(OS),Windows_NT)
+include ./.make/Makefile.win
+else
+include ./.make/Makefile.lnx
 endif
-LDFLAGS="-X main.Commit=${COMMIT} -X main.BuildTime=${BUILD_TIME}"
-LDFLAGS2="-X main.ghClientID=${ghClientID} -X main.ghClientSecret=${ghClientSecret}"
-
-SOURCEDIR=.
-SOURCES := $(shell find $(SOURCEDIR) -name '*.go')
-
-build: clean generate $(BINARY) ## Compiles executable
-$(BINARY): $(SOURCES)
-	@go build -ldflags ${LDFLAGS} -o ${BINARY_DIR}/${BINARY}
-
-help: ## Hey! That's me!
-	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-10s\033[0m %s\n", $$1, $$2}'
-
-.PHONY: install ## Fetches all dependencies using dep
-install:
-	dep ensure -v
-
-.PHONY: update ## Updates all dependencies defined for dep
-update:
-	dep ensure -update -v
-
-clean: ## Cleans up the project binaries and generated Goa files
-	@rm -rf app
-	@rm -rf client
-	@rm -rf tool
-	@rm -rf public/swagger
-	@rm -rf public/schema
-	@rm -rf public/js
-	if [ -f ${BINARY_DIR} ] ; then rm ${BINARY_DIR} ; fi
 
 
-generate: clean ## (re)generates all goagen-generated files
-	@goagen controller	-d $(PROJECT_REPO)/$(PROJECT_NAME)/design -o controllers
-	@goagen app     	-d $(PROJECT_REPO)/$(PROJECT_NAME)/design
-	@goagen swagger 	-d $(PROJECT_REPO)/$(PROJECT_NAME)/design
-	@goagen schema  	-d $(PROJECT_REPO)/$(PROJECT_NAME)/design -o public
-	@goagen client  	-d $(PROJECT_REPO)/$(PROJECT_NAME)/design
 
-.PHONY: test
-test: build ## Executes all tests
+
+# This is a fix for a non-existing user in passwd file when running in a docker
+# container and trying to clone repos of dependencies
+GIT_COMMITTER_NAME ?= "user"
+GIT_COMMITTER_EMAIL ?= "user@example.com"
+export GIT_COMMITTER_NAME
+export GIT_COMMITTER_EMAIL
+
+COMMIT=$(shell git rev-parse HEAD 2>/dev/null)
+GITUNTRACKEDCHANGES := $(shell git status --porcelain --untracked-files=no)
+ifneq ($(GITUNTRACKEDCHANGES),)
+COMMIT := $(COMMIT)-dirty
+endif
+BUILD_TIME=`date -u '+%Y-%m-%dT%H:%M:%SZ'`
+
+.DEFAULT_GOAL := help
+
+# Call this function with $(call log-info,"Your message")
+define log-info =
+@echo "INFO: $(1)"
+endef
+
+# -------------------------------------------------------------------
+# help!
+# -------------------------------------------------------------------
+
+.PHONY: help
+help: ## Prints this help
+	@awk 'BEGIN {FS = ":.*?## "} /^[a-zA-Z_-]+:.*?## / {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}' $(MAKEFILE_LIST) | sort
+
+# -------------------------------------------------------------------
+# required tools
+# -------------------------------------------------------------------
+
+# Find all required tools:
+GIT_BIN := $(shell command -v $(GIT_BIN_NAME) 2> /dev/null)
+
+DEP_BIN_DIR := $(TMP_PATH)/bin
+DEP_BIN := $(DEP_BIN_DIR)/$(DEP_BIN_NAME)
+DEP_VERSION=v0.4.1
+
+GO_BIN := $(shell command -v $(GO_BIN_NAME) 2> /dev/null)
+
+$(INSTALL_PREFIX):
+	mkdir -p $(INSTALL_PREFIX)
+$(TMP_PATH):
+	mkdir -p $(TMP_PATH)
+
+.PHONY: prebuild-check
+prebuild-check: $(TMP_PATH) $(INSTALL_PREFIX) 
+# Check that all tools where found
+ifndef GIT_BIN
+	$(error The "$(GIT_BIN_NAME)" executable could not be found in your PATH)
+endif
+ifndef DEP_BIN
+	$(error The "$(DEP_BIN_NAME)" executable could not be found in your PATH)
+endif
+ifndef GO_BIN
+	$(error The "$(GO_BIN_NAME)" executable could not be found in your PATH)
+endif
+
+# -------------------------------------------------------------------
+# deps
+# -------------------------------------------------------------------
+$(DEP_BIN_DIR):
+	mkdir -p $(DEP_BIN_DIR)
+
+
+
+.PHONY: deps 
+deps: $(DEP_BIN) $(VENDOR_DIR) ## Download build dependencies.
+
+# install dep in a the tmp/bin dir of the repo
+$(DEP_BIN): $(DEP_BIN_DIR) 
+	@echo "Installing 'dep' $(DEP_VERSION) at '$(DEP_BIN_DIR)'..."
+	mkdir -p $(DEP_BIN_DIR)
+ifeq ($(UNAME_S),Darwin)
+	@curl -L -s https://github.com/golang/dep/releases/download/$(DEP_VERSION)/dep-darwin-amd64 -o $(DEP_BIN) 
+	@cd $(DEP_BIN_DIR) && \
+	curl -L -s https://github.com/golang/dep/releases/download/$(DEP_VERSION)/dep-darwin-amd64.sha256 -o $(DEP_BIN_DIR)/dep-darwin-amd64.sha256 && \
+	echo "1544afdd4d543574ef8eabed343d683f7211202a65380f8b32035d07ce0c45ef  dep" > dep-darwin-amd64.sha256 && \
+	shasum -a 256 --check dep-darwin-amd64.sha256
+else
+	@curl -L -s https://github.com/golang/dep/releases/download/$(DEP_VERSION)/dep-linux-amd64 -o $(DEP_BIN)
+	@cd $(DEP_BIN_DIR) && \
+	echo "31144e465e52ffbc0035248a10ddea61a09bf28b00784fd3fdd9882c8cbb2315  dep" > dep-linux-amd64.sha256 && \
+	sha256sum -c dep-linux-amd64.sha256
+endif
+	@chmod +x $(DEP_BIN)
+
+$(VENDOR_DIR): Gopkg.toml
+	@echo "checking dependencies with $(DEP_BIN_NAME)"
+	@$(DEP_BIN) ensure -v 
+		
+
+# -------------------------------------------------------------------
+# support for generating goa code
+# -------------------------------------------------------------------
+$(GOAGEN_BIN): $(VENDOR_DIR)
+	cd $(VENDOR_DIR)/github.com/goadesign/goa/goagen && go build -v
+
+# -------------------------------------------------------------------
+# clean
+# -------------------------------------------------------------------
+
+# For the global "clean" target all targets in this variable will be executed
+CLEAN_TARGETS =
+
+CLEAN_TARGETS += clean-artifacts
+.PHONY: clean-artifacts
+## Removes the ./bin directory.
+clean-artifacts:
+	-rm -rf $(INSTALL_PREFIX)
+
+CLEAN_TARGETS += clean-object-files
+.PHONY: clean-object-files
+## Runs go clean to remove any executables or other object files.
+clean-object-files:
+	go clean ./...
+
+CLEAN_TARGETS += clean-generated
+.PHONY: clean-generated
+## Removes all generated code.
+clean-generated:
+	-rm -rf ./app
+	-rm -rf ./swagger/
+
+CLEAN_TARGETS += clean-vendor
+.PHONY: clean-vendor
+## Removes the ./vendor directory.
+clean-vendor:
+	-rm -rf $(VENDOR_DIR)
+
+CLEAN_TARGETS += clean-tmp
+.PHONY: clean-tmp
+## Removes the ./vendor directory.
+clean-tmp:
+	-rm -rf $(TMP_DIR)
+
+# Keep this "clean" target here after all `clean-*` sub tasks
+.PHONY: clean
+clean: $(CLEAN_TARGETS) ## Runs all clean-* targets.
+
+# -------------------------------------------------------------------
+# build the binary executable (to ship in prod)
+# -------------------------------------------------------------------
+LDFLAGS=-ldflags "-X ${PACKAGE_NAME}/app.Commit=${COMMIT} -X ${PACKAGE_NAME}/app.BuildTime=${BUILD_TIME}"
+
+$(SERVER_BIN): prebuild-check deps generate ## Build the server
+	@echo "building $(SERVER_BIN)..."
+	go build -v $(LDFLAGS) -o $(SERVER_BIN)
+
+.PHONY: build
+build: $(SERVER_BIN) ## Build the server
+
+.PHONY: generate
+generate: prebuild-check $(DESIGNS) $(GOAGEN_BIN) $(VENDOR_DIR) ## Generate GOA sources. Only necessary after clean of if changed `design` folder.
+	$(GOAGEN_BIN) app -d ${PACKAGE_NAME}/${DESIGN_DIR}
+	$(GOAGEN_BIN) controller -d ${PACKAGE_NAME}/${DESIGN_DIR} -o controllers/ --pkg controllers --app-pkg ${PACKAGE_NAME}/app
+	$(GOAGEN_BIN) swagger -d ${PACKAGE_NAME}/${DESIGN_DIR}
+	
+
+.PHONY: test 
+test: build  ## Executes all tests
 	@ginkgo -r
 
 .PHONY: format ## Removes unneeded imports and formats source code
@@ -67,8 +192,8 @@ check: ## Concurrently runs a whole bunch of static analysis tools
 	@gometalinter --enable=misspell --enable=gosimple --enable-gc --vendor --skip=app --skip=client --skip=tool --exclude ^app/test/ --deadline 300s ./...
 
 .PHONY: run
-run: ## runs the service locally
-	${BINARY_DIR}/${BINARY}
+run: build ## runs the service locally
+	$SERVER_BIN
 
 .PHONY: tools
 tools: ## Installs all necessary tools

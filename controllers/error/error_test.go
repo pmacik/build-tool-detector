@@ -12,7 +12,7 @@ import (
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	. "github.com/tinakurian/build-tool-detector/controllers/error"
+	. "github.com/fabric8-services/build-tool-detector/controllers/error"
 )
 
 var _ = Describe("Error", func() {

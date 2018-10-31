@@ -10,7 +10,7 @@ import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 
-	. "github.com/tinakurian/build-tool-detector/domain/types"
+	. "github.com/fabric8-services/build-tool-detector/domain/types"
 )
 
 var _ = Describe("BuildToolType", func() {

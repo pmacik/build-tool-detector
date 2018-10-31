@@ -6,10 +6,10 @@ import (
 	"os"
 	"time"
 
+	"github.com/fabric8-services/build-tool-detector/client"
+	"github.com/fabric8-services/build-tool-detector/tool/cli"
 	goaclient "github.com/goadesign/goa/client"
 	"github.com/spf13/cobra"
-	"github.com/tinakurian/build-tool-detector/client"
-	"github.com/tinakurian/build-tool-detector/tool/cli"
 )
 
 func main() {

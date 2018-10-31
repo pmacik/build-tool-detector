@@ -1,21 +1,21 @@
-//go:generate goagen bootstrap -d github.com/tinakurian/build-tool-detector/design
+//go:generate goagen bootstrap -d github.com/fabric8-services/build-tool-detector/design
 
 package main
 
 import (
 	"strconv"
 
+	"github.com/fabric8-services/build-tool-detector/app"
+	"github.com/fabric8-services/build-tool-detector/config"
+	"github.com/fabric8-services/build-tool-detector/controllers"
+	"github.com/fabric8-services/build-tool-detector/domain/repository/github"
+	"github.com/fabric8-services/build-tool-detector/log"
 	"github.com/fabric8-services/fabric8-common/goamiddleware"
 	"github.com/fabric8-services/fabric8-common/token"
 	"github.com/goadesign/goa"
 	"github.com/goadesign/goa/middleware"
 	"github.com/goadesign/goa/middleware/security/jwt"
 	"github.com/spf13/viper"
-	"github.com/tinakurian/build-tool-detector/app"
-	"github.com/tinakurian/build-tool-detector/config"
-	"github.com/tinakurian/build-tool-detector/controllers"
-	"github.com/tinakurian/build-tool-detector/domain/repository/github"
-	"github.com/tinakurian/build-tool-detector/log"
 )
 
 const (
