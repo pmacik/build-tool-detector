@@ -1,40 +1,61 @@
 = Build Tool Detector
-:test: gometaliner
+Little service which will detect what build tool you are using.
 
-Little service which will detect what build tool you are using
+=== Build [[build]]
 
-=== Start hacking [[hacking]]
-Use `config-template.yml` as a template to create your own `config.yml` file with the appropriate environment variable values. The application will not run unless a github client id and github client secret are provided.
+==== Pre-requisites
+* link:https://golang.org/doc/install[Golang prerequisites] and `$GOPATH` setup.
+NOTE: Stick to Golang version 10 because of link:https://github.com/goadesign/goa/pull/1548[goa and golang 11]. Have a look how link:https://github.com/moovweb/gvm[Go Version Manager] can help you simplifying configuration and management of different versions of Go.
 
-Use `setup.sh` script we ship in this repository to get started right away! Simply run following `curl` command to get
-latest and the greatest setup.
+* clone the repo in your GOPATH:
+[source,bash]
+----
+$ git clone https://github.com/fabric8-services/build-tool-detector $GOPATH/src/github.com/fabric8-services/build-tool-detector
+----
+==== Setup
+* Use `config-template.yml` as a template to create your own `config.yml` file with the appropriate environment variable values.
+[source,bash]
+----
+$ cp config-template.yml config.yml
+----
+* You need to configure GH OAuth app to test it locally:
+
+1. Go to https://github.com/settings/applications/new[OAuth app]
+1. Create a new developer application, in the `Authorization callback URL`,
+1. Enter the url `http://localhost:8099`.
+
+You'll get a page with `GITHUB_CLIENT_ID` and `GITHUB_CLIENT_SECRET` that you should use in your `config.xml`:
+```
+github:
+    clientID: "GITHUB_CLIENT_ID"
+    clientSecret: "GITHUB_CLIENT_SECRET"
+```
+==== Build
 
 [source,bash]
 ----
-$ curl -sSL https://git.io/fAPbw | bash
+$ make build
 ----
 
-Assuming that you have all the link:https://golang.org/doc/install[Golang prerequisites] in place (such as `$GOPATH`), clone the repository first.
-
-NOTE: Have a look how link:https://github.com/moovweb/gvm[Go Version Manager] can help you simplifying configuration and management of different versions of Go.
-
-Then run the build by simply executing `make` from the root directory. This will perform following actions:
-
-. Clean artifacts from the previous build
-. Fetch or update dependencies using `godep`
-. Compile and build binaries
-. Run tests
-. Run static code analysis
-
+This will perform following actions: fetch dependencies, generate Goa files from design folder, compile.
 When in doubt just `make help`.
 
-=== Continuous Testing [[testing]]
+=== Test [[test]]
 
 In order to continuously run the tests whenever code change occur execute following command from the root directory of the project:
 
 [source,bash]
 ----
-$ ginkgo watch -r
+$ make test
 ----
 
 and keep it running in the terminal.
+
+=== Run [[run]]
+
+Run the server:
+
+[source,bash]
+----
+$ make run
+----
