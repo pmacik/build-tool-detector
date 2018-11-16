@@ -12,12 +12,15 @@ maven.
 package repository
 
 import (
-	"errors"
+	"context"
 	"net/url"
 	"strings"
 
+	"github.com/pkg/errors"
+
 	"github.com/fabric8-services/build-tool-detector/config"
 	"github.com/fabric8-services/build-tool-detector/domain/repository/github"
+	"github.com/fabric8-services/build-tool-detector/domain/token"
 	"github.com/fabric8-services/build-tool-detector/domain/types"
 )
 
@@ -37,7 +40,7 @@ const (
 //
 // Note: This method will likely need to be enhanced
 // to handle different github url formats.
-func CreateService(urlToParse string, branch *string, configuration config.Configuration) (types.RepositoryService, error) {
+func CreateService(ctx *context.Context, urlToParse string, branch *string, configuration config.Configuration) (types.RepositoryService, error) {
 
 	u, err := url.Parse(urlToParse)
 
@@ -56,5 +59,12 @@ func CreateService(urlToParse string, branch *string, configuration config.Confi
 		return nil, github.ErrUnsupportedGithubURL
 	}
 
-	return github.Create(urlSegments, branch, configuration)
+	tk, err := token.GetGitHubToken(ctx, configuration.GetAuthServiceURL(), u)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to retrieve token from auth")
+	}
+	if tk == nil {
+		return nil, errors.Wrap(err, "failed to retrieve token from auth")
+	}
+	return github.Create(urlSegments, branch, configuration, *tk)
 }

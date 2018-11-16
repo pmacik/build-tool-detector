@@ -46,18 +46,21 @@ type BuildToolDetectorController struct {
 
 // NewBuildToolDetectorController creates a build-tool-detector controller.
 func NewBuildToolDetectorController(service *goa.Service, configuration config.Configuration) *BuildToolDetectorController {
-	return &BuildToolDetectorController{Controller: service.NewController(buildToolDetectorController), Configuration: configuration}
+	return &BuildToolDetectorController{
+		Controller:    service.NewController(buildToolDetectorController),
+		Configuration: configuration,
+	}
 }
 
 // Show runs the show action.
 func (c *BuildToolDetectorController) Show(ctx *app.ShowBuildToolDetectorContext) error {
 	rawURL := ctx.URL
-	repositoryService, err := repository.CreateService(rawURL, ctx.Branch, c.Configuration)
 	ctx.ResponseWriter.Header().Set(contentType, applicationJSON)
+
+	repositoryService, err := repository.CreateService(&ctx.Context, rawURL, ctx.Branch, c.Configuration)
 	if err != nil {
 		return handleError(ctx, err)
 	}
-
 	buildToolType, err := repositoryService.DetectBuildTool(ctx.Context)
 	if err != nil {
 		return handleError(ctx, err)

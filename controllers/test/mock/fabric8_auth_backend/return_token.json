@@ -1,0 +1,7 @@
+{
+  "access_token": "ACCESS_TOKEN",
+  "provider_api_url": "http://github.com",
+  "scope": "SCOPE",
+  "token_type": "TOKEN_TYPE",
+  "username": "USERNAME"
+}
