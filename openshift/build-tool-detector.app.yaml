@@ -43,7 +43,7 @@ objects:
             valueFrom:
               secretKeyRef:
                 name: build-tool-detector
-                key: github.sentry.dsn
+                key: sentry.dsn
           - name: BUILD_TOOL_DETECTOR_AUTH_URI
             valueFrom:
               configMapKeyRef:
