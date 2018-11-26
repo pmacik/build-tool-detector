@@ -475,6 +475,21 @@
   revision = "5420a8b6744d3b0345ab293f6fcba19c978f1183"
   version = "v2.2.1"
 
+[[projects]]
+  name = "github.com/pact-foundation/pact-go"
+  packages = [
+    "dsl",
+    "types",
+    "utils",
+  ]
+  revision = "v1.0.0-beta.2"
+  version = "v1.0.0-beta.2"
+
+[[projects]]
+  name = "github.com/tebeka/selenium"
+  packages = ["."]
+  revision = "master"
+
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1

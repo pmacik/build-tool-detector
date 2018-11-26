@@ -1,0 +1,51 @@
+{
+  "consumer": {
+    "name": "Fabric8BuildToolDetectorGenericConsumer"
+  },
+  "provider": {
+    "name": "Fabric8BuildToolDetector"
+  },
+  "interactions": [
+    {
+      "description": "A request to get status",
+      "providerState": "Build tool detector service is up and running.",
+      "request": {
+        "method": "GET",
+        "path": "/api/status/",
+        "matchingRules": {
+          "$.path": {
+            "match": "regex",
+            "regex": "\\/api\\/status[\\/]?"
+          }
+        }
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "Content-Type": "application/vnd.status+json"
+        },
+        "body": {
+          "buildTime": "2018-10-05T10:03:04Z",
+          "commit": "0f9921980549b2baeb43f6f16cbe794f430f498c",
+          "startTime": "2018-10-09T15:04:50Z"
+        },
+        "matchingRules": {
+          "$.body.buildTime": {
+            "match": "type"
+          },
+          "$.body.commit": {
+            "match": "type"
+          },
+          "$.body.startTime": {
+            "match": "type"
+          }
+        }
+      }
+    }
+  ],
+  "metadata": {
+    "pactSpecification": {
+      "version": "2.0.0"
+    }
+  }
+}

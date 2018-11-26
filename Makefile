@@ -10,6 +10,7 @@ DESIGN_DIR=design
 DESIGNS := $(shell find $(SOURCE_DIR)/$(DESIGN_DIR) -path $(SOURCE_DIR)/vendor -prune -o -name '*.go' -print)
 
 include ./.make/docker.mk
+include ./.make/test.mk
 ifeq ($(OS),Windows_NT)
 include ./.make/Makefile.win
 else
